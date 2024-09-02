@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Market Dashboard</title>
+    <link rel="icon" href="./Images/icon.jpg" type="image/x-icon">
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background: #f4f7fa;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .navbar {
+        background-color: #2c3e50;
+        color: #fff;
+        padding: 10px; /* Adjusted padding for better spacing */
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .navbar h1 {
+        margin: 0;
+        font-size: 24px;
+        text-align: center; /* Centers the text within the h1 */
+        flex: 1; /* Allows the h1 to take up available space */
+      }
+
+      .navbar-left,
+      .navbar-right {
+        flex: 1; /* Allows equal spacing on both sides */
+        display: flex; /* Flex display for alignment */
+        justify-content: center; /* Centers content horizontally */
+        align-items: center; /* Centers content vertically */
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #34495e;
+        color: #fff;
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        left: 0;
+        padding-top: 20px;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(0); /* Show sidebar by default */
+      }
+
+      .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .sidebar ul li {
+        padding: 15px 20px;
+        border-bottom: 1px solid #2c3e50;
+      }
+
+      .sidebar ul li:hover {
+        background-color: #2c3e50;
+        cursor: pointer;
+      }
+
+      .sidebar ul li a {
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 80px 20px 20px 20px;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+
+      .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card h2 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+
+      .logout-button {
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        display: block;
+        margin-left: auto;
+        margin-right: 0;
+      }
+
+      .logout-button:hover {
+        background-color: #c0392b;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #2c3e50;
+        color: #fff;
+      }
+
+      /* Hide sidebar-toggle on desktop */
+      @media (min-width: 769px) {
+        .sidebar-toggle {
+          display: none;
+        }
+
+        /* Move logout button to the right */
+        .navbar-right {
+          margin-right: 20px; /* Adjust this value as needed */
+        }
+      }
+
+      /* Sidebar visibility for mobile devices */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%); /* Hide sidebar by default on mobile */
+        }
+
+        .sidebar.active {
+          transform: translateX(0); /* Show sidebar when active on mobile */
+        }
+
+        .main-content {
+          margin-left: 0;
+          padding: 80px 20px 20px 20px;
+        }
+
+        .sidebar-toggle {
+          display: block;
+          position: fixed;
+          left: 15px;
+          top: 15px;
+          font-size: 20px;
+          color: #fff;
+          cursor: pointer;
+          z-index: 1100;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .navbar h1 {
+          font-size: 18px;
+        }
+
+        .sidebar {
+          width: 100%;
+          transform: translateX(-100%); /* Hide sidebar on small screens */
+        }
+
+        .main-content {
+          padding: 60px 10px 10px 10px;
+        }
+
+        .card {
+          padding: 15px;
+        }
+      }
+
+      .positive-change {
+        color: green;
+      }
+
+      .negative-change {
+        color: red;
+      }
+
+      /* CSS for loading spinner */
+      .loader {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+        z-index: 2000;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Hide loader when data is loaded */
+      .loader.hidden {
+        display: none;
+      }
+
+      /* profile css */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Popup styling */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Popup styling */
+      .popup {
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+
+      .popup-content {
+        position: relative;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        height: 80%;
+        overflow: auto;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 28px;
+        color: #333;
+        cursor: pointer;
+      }
+
+      .download-resume {
+    position: absolute;
+    top: 90px; /* Increased top value to move the button down */
+    right: 10px;
+    background-color: #3498db;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+
+      .download-resume:hover {
+        background-color: #2980b9;
+      }
+
+      .popup-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .profile-pic {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-right: 20px;
+        object-fit: cover;
+      }
+
+      .header-details {
+        flex-grow: 1;
+      }
+
+      .header-details h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+      }
+
+      .header-details p {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #666;
+      }
+
+      .divider {
+        border: 0;
+        border-top: 1px solid #ddd;
+        margin: 20px 0;
+      }
+
+      .popup-section {
+        margin-bottom: 20px;
+      }
+
+      .popup-section h3 {
+        margin-top: 0;
+        font-size: 20px;
+        color: #333;
+      }
+
+      .popup-section ul {
+        padding-left: 20px;
+        margin: 10px 0;
+      }
+
+      .popup-section ul li {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+      }
+
+      .popup-section p {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 600px) {
+        .popup-content {
+          width: 100%;
+          padding: 10px;
+        }
+
+        .profile-pic {
+          width: 80px;
+          height: 80px;
+        }
+
+        .header-details h2 {
+          font-size: 20px;
+        }
+
+        .header-details p {
+          font-size: 14px;
+        }
+
+        .popup-section h3 {
+          font-size: 18px;
+        }
+
+        .popup-section ul li {
+          font-size: 14px;
+        }
+
+        .popup-section p {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .popup-content {
+          width: 95%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- profile code -->
+
+    <!-- Popup for profile -->
+    <div class="popup" id="profile-popup">
+      <div class="popup-content">
+          <span class="close-btn" id="close-popup">&times;</span>
+          <a
+              href="https://drive.google.com/file/d/1t18xl2CkyjzTBz_n7cgZV9HCZ_sIUG6y/view?usp=sharing"
+              target="_blank"
+              class="download-resume"
+          >
+              Download Resume
+          </a>
+          <div class="popup-header">
+              <img
+                  src="./Images/sanjay.jpg"
+                  alt="Sanjay's Profile Picture"
+                  class="profile-pic"
+              />
+              <div class="header-details">
+                  <h2>Sanjay Reddy</h2>
+                  <p><strong>Email:</strong> sanjayreddy2099@gmail.com</p>
+                
+              </div>
+          </div>
+          <hr class="divider" />
+          <div class="popup-section">
+              <h3>Technical Skills:</h3>
+              <ul>
+                  <li>Programming Languages: Java</li>
+                  <li>Scripting Languages: HTML, JavaScript, CSS</li>
+                  <li>Database: Oracle, MySQL, MS SQL Server</li>
+                  <li>Server-side Frameworks: Spring Boot, Spring MVC</li>
+                  <li>ORM Tools: Hibernate</li>
+                  <li>Web Services: REST API</li>
+                  <li>Version Control Systems: Git, GitHub</li>
+              </ul>
+          </div>
+          <hr class="divider" />
+          <div class="popup-section">
+              <h3>Education Qualification:</h3>
+              <p>Sri Indu College of Education MBA - 2022 (70%)</p>
+              <p>Sree Venkateswara College B.Com (Computers) - 2020 (72%)</p>
+          </div>
+          <hr class="divider" />
+          
+          <!-- EXPERIENCE SECTION -->
+          <div class="popup-section">
+              <h3 style="color:#3c78d8; font-family:'Arial'; font-size:14pt;">EXPERIENCE</h3>
+              <p style="font-family:'Arial'; font-size:12pt;">
+                  <b>Dream Tekis Software Pvt Ltd, Hyderabad</b><br/>
+                  Software Engineer (April 2023 - Present)
+              </p>
+              <ul style="font-family:'Arial'; font-size:12pt; margin-top:0; list-style-type: disc; padding-left: 20px;">
+                  <li>Designed and developed applications using Java and J2EE technologies.</li>
+                  <li>Utilized web scripting and styling languages including JavaScript, React, and JSP.</li>
+                  <li>Applied strong knowledge of Spring Boot, Spring MVC, REST Web Services, Microservices, and Hibernate.</li>
+                  <li>Debugged views and stored procedures for MS SQL.</li>
+                  <li>Generated reports using Jasper Assistant.</li>
+                  <li>Managed multiple software projects from design to implementation and delivery.</li>
+                  <li>Adapted quickly to new technologies and project requirements.</li>
+                  <li>Gained domain knowledge in Life Insurance, General Insurance, and Reinsurance.</li>
+              </ul>
+          </div>
+  
+          <hr class="divider" />
+  
+          <!-- PROJECTS SECTION -->
+          <div class="popup-section">
+              <h3 style="color:#3c78d8; font-family:'Arial'; font-size:14pt;">PROJECTS</h3>
+      
+              <p style="font-family:'Arial'; font-size:12pt;">
+                  <b>Broker Management System (SohamApps, Dream Tekis)</b><br/>
+                  <i>Technologies:</i> Java, Spring Boot, Angular 8, MS SQL Server, Jasper Assistant, jQuery
+              </p>
+              <ul style="font-family:'Arial'; font-size:12pt; margin-top:0; list-style-type: disc; padding-left: 20px;">
+                  <li>Involved in analysis, design, coding, and testing of the application.</li>
+                  <li>Coordinated with the team regarding requirements and implementation.</li>
+              </ul>
+
+              <hr style="border:none; border-top:1px solid #d3d3d3;"/>
+  
+              <p style="font-family:'Arial'; font-size:12pt;">
+                  <b>SohamGeni (Dream Tekis)</b><br/>
+                  <i>Technologies:</i> Java, Struts, JSP, Servlets, JBoss, MS SQL Server, JavaScript, Jasper Assistant, jQuery
+              </p>
+              <ul style="font-family:'Arial'; font-size:12pt; margin-top:0; list-style-type: disc; padding-left: 20px;">
+                  <li>Developed features using JSP, Action classes, and JavaScript.</li>
+                  <li>Created reports using Jasper Assistant.</li>
+                  <li>Engaged in design, analysis, coding, configuration, and troubleshooting.</li>
+              </ul>
+  
+              <hr style="border:none; border-top:1px solid #d3d3d3;"/>
+  
+              <p style="font-family:'Arial'; font-size:12pt;">
+                  <b>Market-Filter (Personal Project)</b> <a href="https://market-filter.netlify.app/" target="_blank">link</a><br/>
+                  <i>Technologies:</i> Java (17), Spring Boot (v3.2.8), PostgreSQL, HTML, CSS, JavaScript
+              </p>
+              <ul style="font-family:'Arial'; font-size:12pt; margin-top:0; list-style-type: disc; padding-left: 20px;">
+                  <li>Developed a desktop and mobile-friendly stock market analysis tool using JAVA ,Spring Boot for Back-end and HTML, CSS , JS for back-end.</li>
+                  <li>The application analyzes stocks from indices such as Nifty 50, Nifty Next 50, Nifty MidCap, and Nifty Small-Cap.</li>
+                  <li>It tracks and retrieves all-time low and high trading stocks by aggregating financial data from various sources and storing it in PostgreSQL.</li>
+              </ul>
+  
+              
+          </div>
+      </div>
+  </div>
+  
+    
+    
+      </div>
+      
+      
+    </div>
+    <div class="navbar">
+      <div class="navbar-left"></div>
+      <h1>Market Filter</h1>
+      <div class="navbar-right">
+        <span class="sidebar-toggle">&#9776;</span>
+        <button class="logout-button" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <ul>
+        <li><a href="dashboard.html">Home</a></li>
+        <li><a href="nifty50.html">Nifty 50</a></li>
+        <li><a href="niftyNext50.html">Nifty Next 50</a></li>
+        <li><a href="niftyMidCap.html">Nifty Mid-Cap</a></li>
+        <li><a href="niftySmallCap.html">Nifty Small-Cap</a></li>
+        <li>
+          <a href="StocksTradingNearAllTimeLow.html"
+            >Stocks Trading All Time Low</a
+          >
+        </li>
+        <li>
+          <a href="StocksTradingNearAllTimeHigh.html"
+            >Stocks Trading All Time High</a
+          >
+        </li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <div class="card">
+        <h2>Market Overview</h2>
+        <p>
+          Get a quick overview of the stock market. Monitor major indices and
+          get a snapshot of top gainers and losers.
+        </p>
+      </div>
+      <div class="card">
+        <h2>Major Indices</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Price</th>
+                <th>Change</th>
+                <th>52 Week Low</th>
+                <th>52 Week High</th>
+              </tr>
+            </thead>
+            <tbody id="index-data"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="loader" id="loader"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const loader = document.getElementById("loader");
+
+        function fetchData() {
+          loader.classList.remove("hidden"); // Show the loader
+          fetch("https://marketfilter.onrender.com/api/Nifty/fetch-nifty-value")
+            // fetch("http://localhost:8089/api/Nifty/fetch-nifty-value")
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              populateTable(data);
+              loader.classList.add("hidden"); // Hide the loader
+            })
+            .catch((error) => {
+              console.error("Error fetching data:", error);
+              loader.classList.add("hidden"); // Hide the loader even if there is an error
+            });
+        }
+
+        function populateTable(data) {
+          const tableBody = document.getElementById("index-data");
+          tableBody.innerHTML = "";
+
+          const customOrder = ["NIFTY", "BANK_NIFTY", "NIFTY_IT"];
+
+          const sortedData = Object.entries(data).sort(([indexA], [indexB]) => {
+            const indexAOrder = customOrder.indexOf(indexA);
+            const indexBOrder = customOrder.indexOf(indexB);
+
+            if (indexAOrder !== -1 && indexBOrder !== -1) {
+              return indexAOrder - indexBOrder;
+            }
+
+            if (indexAOrder !== -1) {
+              return -1;
+            }
+            if (indexBOrder !== -1) {
+              return 1;
+            }
+
+            return indexA.localeCompare(indexB);
+          });
+
+          for (const [index, values] of sortedData) {
+            const row = document.createElement("tr");
+
+            const changeText = values.change.replace("%", "").trim();
+            const changeValue = parseFloat(changeText);
+            const changeClass =
+              changeValue >= 0 ? "positive-change" : "negative-change";
+
+            row.innerHTML = `
+        <td>${index}</td>
+        <td>${values.value}</td>
+        <td class="${changeClass}">${values.change}</td>
+        <td>${values.yearLow}</td>
+        <td>${values.yearlyHigh}</td>
+      `;
+            tableBody.appendChild(row);
+          }
+        }
+
+        // Fetch data when the page loads
+        fetchData();
+      });
+
+      function logout() {
+        window.location.href = "index.html";
+      }
+
+      function toggleSidebar() {
+        document.querySelector(".sidebar").classList.toggle("active");
+      }
+
+      document
+        .querySelector(".sidebar-toggle")
+        .addEventListener("click", toggleSidebar);
+
+      //  profile js
+
+      document.addEventListener("DOMContentLoaded", function () {
+    const profilePopup = document.getElementById("profile-popup");
+    const closePopup = document.getElementById("close-popup");
+
+    // Show the popup with animation after 4 seconds
+    setTimeout(() => {
+        profilePopup.style.display = "flex"; // Show the popup after 4 seconds
+    }, 5000);
+
+    // Close the popup when the close button is clicked
+    closePopup.addEventListener("click", function () {
+        profilePopup.style.display = "none";
+    });
+
+    // Close the popup by clicking outside of it
+    window.addEventListener("click", function (event) {
+        if (event.target === profilePopup) {
+            profilePopup.style.display = "none";
+        }
+    });
+});
+
+    </script>
+  </body>
+</html>

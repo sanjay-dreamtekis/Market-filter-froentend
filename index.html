@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Market Login</title>
+    <link rel="icon" href="./Images/icon.jpg" type="image/x-icon" />
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(to bottom right, #2c3e50, #3498db);
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+      }
+
+      .login-container {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        width: 300px;
+        position: relative;
+      }
+
+      .login-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .login-container .input-group {
+        margin-bottom: 15px;
+      }
+
+      .login-container .input-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .login-container .input-group input {
+        width: 93%;
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        background-color: #34495e;
+        color: #fff;
+      }
+
+      .login-container .input-group input::placeholder {
+        color: #bdc3c7;
+      }
+
+      .login-container .login-btn {
+        width: 100%;
+        padding: 10px;
+        background-color: #e74c3c;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .login-container .login-btn:hover {
+        background-color: #c0392b;
+      }
+
+      .login-container .forgot-password {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      .login-container .forgot-password a {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .login-container .forgot-password a:hover {
+        text-decoration: underline;
+      }
+
+      /* Chatbot styling */
+      .chatbot-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+
+      .chatbot-icon img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+      }
+
+      .chatbot-window {
+        position: fixed;
+        bottom: 80px; /* Adjusted position */
+        right: 20px;
+        width: 300px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        color: #333;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 1000;
+      }
+      .chatbot-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background-color: #3498db;
+        color: #fff;
+        position: relative; /* Ensure relative positioning for the close button */
+      }
+
+      .chatbot-header .close-btn {
+        position: absolute;
+        top: 10px; /* Distance from the top */
+        right: 10px; /* Distance from the right */
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+      }
+      .chatbot-header .close-btn:hover {
+        color: #ffcccc; /* Light color for hover effect */
+      }
+      .chatbot-window .chatbot-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background-color: #3498db;
+        color: #fff;
+        position: relative;
+      }
+
+      .chatbot-window .chatbot-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      .chatbot-window .chatbot-header .title {
+        font-weight: bold;
+      }
+
+      .chatbot-window .chatbot-content {
+        padding: 20px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .chatbot-window .chatbot-content hr {
+        margin: 10px 0;
+        border: none;
+        border-top: 1px solid #ccc;
+      }
+
+      .chatbot-window .chatbot-content ul {
+        padding-left: 20px;
+      }
+
+      .chatbot-window .chatbot-content ul li {
+        margin-bottom: 5px;
+      }
+
+      .chatbot-banner {
+        position: fixed;
+        bottom: 80px; /* Adjusted position for mobile */
+        right: 20px;
+        background-color: #ff6347; /* Tomato color for visibility */
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-size: 11px; /* Adjusted font size for mobile */
+        font-weight: bold;
+        text-align: center;
+        z-index: 1000;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      /* Arrow styling */
+      .chatbot-banner:before {
+        content: "";
+        position: absolute;
+        bottom: -10px; /* Adjusted position */
+        left: 94%; /* Centered the arrow horizontally */
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #ff6347; /* Same color as the banner */
+      }
+
+      @media (min-width: 601px) {
+        .chatbot-banner:before {
+          display: none; /* Hide the arrow */
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 20px;
+        }
+
+        .login-container {
+          width: 100%;
+          padding: 20px;
+          box-shadow: none;
+          border-radius: 5px;
+        }
+
+        .chatbot-window {
+          width: calc(100% - 40px);
+          bottom: 90px; /* Adjusted position for mobile */
+          right: 10px;
+        }
+
+        .chatbot-icon {
+          width: 50px;
+          height: 50px;
+          bottom: 10px;
+          right: 10px;
+        }
+
+        .chatbot-window .chatbot-content {
+          padding: 15px;
+          font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+          .chatbot-banner:before {
+            bottom: -8px; /* Slight adjustment for smaller screens */
+            border-top-width: 8px; /* Smaller arrow size for mobile */
+          }
+        }
+      }
+
+      /* Keyframes for pulsing animation with color change */
+@keyframes pulseAnimation {
+  0% {
+    transform: scale(1);
+    color: #ffffff; /* Original color */
+  }
+  50% {
+    transform: scale(1.1); /* Slightly larger */
+    color: #ff6347; /* Tomato color for a highlight effect */
+  }
+  100% {
+    transform: scale(1);
+    color: #ffffff; /* Back to original color */
+  }
+}
+
+/* Apply animation to the highlighted text */
+.chatbot-banner .highlight {
+  display: inline-block; /* Needed for transform to work */
+  animation: pulseAnimation 1.5s ease-in-out infinite; /* Animation timing and infinite repeat */
+  font-weight: bold; /* Make the text bold for emphasis */
+  transition: transform 0.3s ease; /* Smooth transition */
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Market Filter Login</h2>
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter your username" />
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+        />
+      </div>
+      <button class="login-btn" onclick="login()">Login</button>
+      <div class="forgot-password">
+        <a href="#">Forgot your password?</a>
+      </div>
+    </div>
+
+    <!-- Chatbot icon -->
+    <div class="chatbot-icon" onclick="toggleChatbot()">
+      <img src="./Images/sanjay.jpg" alt="Chatbot" />
+    </div>
+    <div class="chatbot-banner">
+      Don't have an account? Use mine!<br />
+      Username: <strong class="highlight">sanjay</strong><br />
+      Password: <strong class="highlight">sanjay</strong><br />
+      Want to know what Market Filter is? Click on icon down
+    </div>
+    
+
+    <!-- Chatbot window -->
+    <div class="chatbot-window" id="chatbot-window">
+      <div class="chatbot-header">
+        <img src="./Images/sanjay.jpg" alt="Chatbot" />
+        <div class="title">Market Filter</div>
+        <button class="close-btn" id="close-btn">&#x2715;</button>
+        <!-- Close icon -->
+      </div>
+      <div class="chatbot-content">
+        <strong>What can you do with Market Filter?</strong>
+        <hr />
+        In Market Filter, you can:
+        <ul>
+          <li>Check indices</li>
+          <li>Find stocks trading near all-time low</li>
+          <li>Find stocks trading near all-time high</li>
+          <li>Analyze market trends</li>
+          <li>And much more!</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      function login() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        if (username === "sanjay" && password === "sanjay"||username === "sanjay " && password === "sanjay "||username === "Sanjay " && password === "Sanjay") {
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Invalid credentials. Please try again.");
+        }
+      }
+
+      function toggleChatbot() {
+        var chatbotWindow = document.getElementById("chatbot-window");
+        if (
+          chatbotWindow.style.display === "none" ||
+          chatbotWindow.style.display === ""
+        ) {
+          chatbotWindow.style.display = "flex";
+        } else {
+          chatbotWindow.style.display = "none";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const chatbotWindow = document.getElementById("chatbot-window");
+        const closeButton = document.getElementById("close-btn");
+        const chatbotIcon = document.querySelector(".chatbot-icon");
+
+        chatbotIcon.addEventListener("click", function () {
+          chatbotWindow.style.display = "flex";
+          chatbotIcon.style.display = "none";
+        });
+
+        closeButton.addEventListener("click", function () {
+          chatbotWindow.style.display = "none";
+          chatbotIcon.style.display = "flex";
+        });
+      });
+    </script>
+  </body>
+</html>
